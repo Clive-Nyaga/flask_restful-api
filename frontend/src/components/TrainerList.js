@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function TrainerList() {
+function TrainerList({ refreshKey, onEdit }) {
   const [trainers, setTrainers] = useState([]);
 
   useEffect(() => {
@@ -8,7 +8,19 @@ function TrainerList() {
       .then(response => response.json())
       .then(data => setTrainers(data))
       .catch(err => console.error('Error fetching trainers:', err));
-  }, []);
+  }, [refreshKey]);
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this trainer?')) {
+      fetch(`http://localhost:5000/get_trainer_by_id/${id}`, {
+        method: 'DELETE'
+      })
+        .then(() => {
+          setTrainers(trainers.filter(trainer => trainer.id !== id));
+        })
+        .catch(err => console.error('Error deleting trainer:', err));
+    }
+  };
 
   return (
     <div style={{ margin: '20px', padding: '20px', border: '1px solid #ccc' }}>
@@ -22,6 +34,20 @@ function TrainerList() {
             <p><strong>Specialization:</strong> {trainer.specialization}</p>
             <p><strong>Bio:</strong> {trainer.bio}</p>
             <p><strong>Phone:</strong> {trainer.phone_number}</p>
+            <div style={{ marginTop: '10px' }}>
+              <button 
+                onClick={() => onEdit(trainer)}
+                style={{ padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', marginRight: '10px' }}
+              >
+                Edit
+              </button>
+              <button 
+                onClick={() => handleDelete(trainer.id)}
+                style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none' }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))
       )}

@@ -1,5 +1,6 @@
-from flask import Flask, request, make_response, jsonify,json
+from flask import Flask, request, make_response, jsonify, json
 from flask_migrate import Migrate
+from flask_cors import CORS
 from models import db, Trainer
 from flask_restful import Resource,Api
 from werkzeug.exceptions import HTTPException
@@ -11,6 +12,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gym.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
+CORS(app)
 db.init_app(app)
 migrate = Migrate(app, db,render_as_batch=True)
 api=Api(app)
@@ -53,12 +55,12 @@ class Trainers(Resource):
 
 class TrainerById(Resource):
     def get(self,id):
-        trainer = db.session.query(Trainer).get(trainer_id)
+        trainer = db.session.query(Trainer).get(id)
         resp = make_response(trainer.to_dict(), 200)
         return resp
 
     def patch(self,id):
-        trainer = db.session.query(Trainer).get(trainer_id)
+        trainer = db.session.query(Trainer).get(id)
         for attr in request.json:
             setattr(trainer,attr,request.json.get(attr))
 
@@ -102,4 +104,7 @@ def handle_exception(e):
 api.add_resource(Welcome, '/')
 api.add_resource(Trainers,'/trainers')
 api.add_resource(TrainerById,"/get_trainer_by_id/<int:id>")
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
